@@ -1,4 +1,5 @@
 require "graphql"
+require "net/http"
 
 ### Our target—allow clients to query a test
 #
@@ -37,6 +38,17 @@ class Query < GraphQL::Schema::Object
   # Some extra stuff just for fun
   def foo(*args)
     "Goodbye, cruel world! 😢"
+  end
+
+  field :crypto_price, String, null: true, description: "Returns the current market price for given product." do
+    argument :product, String, required: true
+  end
+
+  def crypto_price(product:)
+    api_endpoint = URI("https://api.pro.coinbase.com/products/#{ product }/ticker")
+    response = Net::HTTP.get(api_endpoint)
+    data = JSON.parse(response)
+    data["price"]
   end
 end
 
